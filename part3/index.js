@@ -80,7 +80,7 @@ app.post("/api/persons", (request, response) => {
   let person = {
     name: request.body.name,
     number: request.body.number,
-    id: request.body.id,
+    id: request.body.id || generateId(),
   };
   persons = persons.concat(person);
   response.status(200).send(person);
