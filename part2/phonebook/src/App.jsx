@@ -109,7 +109,7 @@ const App = () => {
     const personObject = {
       id: `${persons.length + 1}`,
       name: newName.trim(),
-      number: newPhoneNumber,
+      number: newPhoneNumber.toString(),
     };
 
     const sameNameEntry = persons.some((person) => person.name === newName);

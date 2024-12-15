@@ -2,10 +2,16 @@ const express = require("express");
 const app = express();
 const morgan = require("morgan");
 const cors = require("cors");
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  })
+);
 app.use(express.json());
 morgan.token("resContent", (request, response) => JSON.stringify(request.body));
 app.use(morgan(":method :url :status :response-time ms :resContent"));
+app.use(express.static("dist"));
 
 let persons = [
   {
@@ -55,6 +61,9 @@ function nameExists(name) {
   return persons.filter((person) => person.name === name).length ? true : false;
 }
 app.get("/api/persons", (request, response) => {
+  response.json(persons);
+});
+app.get("/", (request, response) => {
   response.send(persons);
 });
 
@@ -70,11 +79,11 @@ app.post("/api/persons", (request, response) => {
   }
   let person = {
     name: request.body.name,
-    id: generateId(),
+    number: request.body.number,
+    id: request.body.id,
   };
   persons = persons.concat(person);
-  response.status(200).end();
-  console.log(request.body);
+  response.status(200).send(person);
 });
 app.get("/api/persons/:id", (request, response) => {
   let id = request.params.id;
