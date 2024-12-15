@@ -1,13 +1,13 @@
 const express = require("express");
 const app = express();
 const morgan = require("morgan");
-const cors = require("cors");
+/* const cors = require("cors");
 app.use(
   cors({
     origin: "http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE"],
   })
-);
+); */
 app.use(express.json());
 morgan.token("resContent", (request, response) => JSON.stringify(request.body));
 app.use(morgan(":method :url :status :response-time ms :resContent"));
