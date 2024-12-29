@@ -1,47 +1,38 @@
 const express = require("express");
+const dotenv = require("dotenv");
 const app = express();
 const morgan = require("morgan");
-/* const cors = require("cors");
+const { fetchPersons, PersonModel } = require("./models/persons");
+
+dotenv.config();
+const cors = require("cors");
 app.use(
   cors({
     origin: "http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE"],
   })
-); */
+);
 app.use(express.json());
 morgan.token("resContent", (request, response) => JSON.stringify(request.body));
 app.use(morgan(":method :url :status :response-time ms :resContent"));
 app.use(express.static("dist"));
 
-let persons = [
-  {
-    id: "1",
-    name: "Arto Hellas",
-    number: "040-123456",
-  },
-  {
-    id: "2",
-    name: "Ada Lovelace",
-    number: "39-44-5323523",
-  },
-  {
-    id: "3",
-    name: "Dan Abramov",
-    number: "12-43-234345",
-  },
-  {
-    id: "4",
-    name: "Mary Poppendieck",
-    number: "39-23-6423122",
-  },
-];
+let persons;
 
-app.get("/info", (request, response) => {
-  let numberOfPeople = persons.length;
+const updatePersonsArray = async () => {
+  try {
+    persons = await fetchPersons();
+  } catch (error) {
+    console.log("Could no fetch the persons.", error);
+  }
+};
+updatePersonsArray();
+
+app.get("/info", async (request, response) => {
+  let numberOfPeople = await PersonModel.countDocuments();
   let currentDate = new Date();
-
   response.send(`<p>
-        Phonebook has info for ${numberOfPeople} people
+        Phonebook has info for  ${numberOfPeople} people
         <br/>
         <br />
        ${currentDate}
@@ -57,9 +48,9 @@ function generateId() {
 
   return newPersonId;
 }
-function nameExists(name) {
+/* function nameExists(name) {
   return persons.filter((person) => person.name === name).length ? true : false;
-}
+} */
 app.get("/api/persons", (request, response) => {
   response.json(persons);
 });
@@ -68,40 +59,42 @@ app.get("/", (request, response) => {
 });
 
 app.post("/api/persons", (request, response) => {
-  if (nameExists(request.body.name)) {
-    return response.status(404).json({ error: "The name must be unique" });
-  }
-  if (!request.body.name) {
-    return response.status(404).json({ error: "Missing Name" });
-  }
   if (!request.body.number) {
     return response.status(404).json({ error: "Missing number" });
   }
-  let person = {
+  let person = new PersonModel({
     name: request.body.name,
     number: request.body.number,
     id: request.body.id || generateId(),
-  };
+  });
   persons = persons.concat(person);
+  person.save();
+  updatePersonsArray();
   response.status(200).send(person);
 });
 app.get("/api/persons/:id", (request, response) => {
-  let id = request.params.id;
-  const person = persons.find((person) => person.id === id);
-
-  if (!person) return response.status(404).end();
-
-  response.json(person);
+  PersonModel.findById(request.params.id).then((person) => {
+    response.json(person);
+  });
 });
 
 app.delete("/api/persons/:id", (request, response) => {
-  const id = request.params.id;
-  persons = persons.filter((person) => person.id !== id);
-
-  response.status(204).end();
+  PersonModel.deleteOne({ _id: request.params.id })
+    .then((result) => {
+      if (result.deletedCount > 0) {
+        updatePersonsArray();
+        response.status(200).end();
+      } else {
+        response.status(404).send("Person not found");
+      }
+    })
+    .catch((error) => {
+      console.log("Error deleting the person: ", error);
+      response.status(500).send("Error deleting person.");
+    });
 });
 
-const port = process.env.port || 3001;
+const port = process.env.PORT;
 
 app.listen(port, () => {
   console.log(`The server is running on the port ${port}`);

@@ -43,9 +43,16 @@ function NameAndNumberDisplay({
   personsToShow,
   Delete,
 }) {
+  if (personsToShow.length === 0) {
+    return;
+  }
+
   return (
     <>
       {personsToShow.map((person) => {
+        if (!person.id) {
+          return;
+        }
         return (
           <p key={person.id}>
             {person.name}
@@ -74,7 +81,7 @@ function Notification({ message }) {
   if (message === "") {
     return null;
   }
-  if (message.includes("removed")) {
+  if (message.includes("already been removed")) {
     return (
       <>
         <h1 className="error">{message}</h1>
@@ -107,12 +114,14 @@ const App = () => {
   function addPerson(event) {
     event.preventDefault();
     const personObject = {
-      id: `${persons.length + 1}`,
       name: newName.trim(),
       number: newPhoneNumber.toString(),
     };
 
-    const sameNameEntry = persons.some((person) => person.name === newName);
+    const sameNameEntry =
+      persons.length > 0
+        ? persons.some((person) => person.name === newName)
+        : false;
 
     if (sameNameEntry) {
       if (
@@ -127,7 +136,6 @@ const App = () => {
         });
         setNewName("");
         setNewPhoneNumber("");
-        window.location.reload();
       }
     } else {
       axiosService.create(personObject).then((response) => {
@@ -168,14 +176,21 @@ const App = () => {
 
   async function Delete(person) {
     if (window.confirm(`Do you really want to delete ${person.name}`)) {
-      await axiosService.Delete(person.id).catch((error) => {
-        setMessage(`Information of ${person.name} has already been removed.`);
-      });
-      update();
+      await axiosService
+        .Delete(person.id)
+        .then(() => {
+          setMessage(`Information of ${person.name} has  been removed.`);
+        })
+        .catch(() => {
+          setMessage(`Information of ${person.name} has already been removed`);
+        })
+        .finally(() => {
+          update();
+        });
     }
     setTimeout(() => {
       setMessage("");
-    }, 5000);
+    }, 2000);
   }
 
   async function update() {
