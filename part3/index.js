@@ -23,7 +23,11 @@ const updatePersonsArray = async () => {
   try {
     persons = await fetchPersons();
   } catch (error) {
-    console.log("Could no fetch the persons.", error);
+    persons = {
+      name: "error",
+      number: "123-32323",
+    };
+    console.log("Could not fetch the persons.", error);
   }
 };
 updatePersonsArray();
