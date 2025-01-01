@@ -5,13 +5,13 @@ const morgan = require("morgan");
 const { fetchPersons, PersonModel } = require("./models/persons");
 
 dotenv.config();
-const cors = require("cors");
+/* const cors = require("cors");
 app.use(
   cors({
     origin: "http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE"],
   })
-);
+); */
 app.use(express.json());
 morgan.token("resContent", (request, response) => JSON.stringify(request.body));
 app.use(morgan(":method :url :status :response-time ms :resContent"));
@@ -53,9 +53,6 @@ function generateId() {
 } */
 app.get("/api/persons", (request, response) => {
   response.json(persons);
-});
-app.get("/", (request, response) => {
-  response.send(persons);
 });
 
 app.post("/api/persons", (request, response) => {
