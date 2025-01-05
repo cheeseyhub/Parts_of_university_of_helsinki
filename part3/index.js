@@ -17,8 +17,17 @@ morgan.token("resContent", (request, response) => JSON.stringify(request.body));
 app.use(morgan(":method :url :status :response-time ms :resContent"));
 app.use(express.static("dist"));
 
-let persons;
+//Error handler
+const errorHandler = (error, request, response, next) => {
+  console.log(error.message);
+  if ((error.name = "CastError")) {
+    return response.status(400).send({ error: "malformatted id " });
+  }
+  next(error);
+};
+app.use(errorHandler);
 
+let persons;
 const updatePersonsArray = async () => {
   try {
     persons = await fetchPersons();
@@ -74,25 +83,32 @@ app.post("/api/persons", (request, response) => {
   response.status(200).send(person);
 });
 app.get("/api/persons/:id", (request, response) => {
-  PersonModel.findById(request.params.id).then((person) => {
-    response.json(person);
-  });
+  PersonModel.findById(request.params.id)
+    .then((person) => {
+      response.json(person);
+    })
+    .catch((error) => next(error));
 });
 
 app.delete("/api/persons/:id", (request, response) => {
-  PersonModel.deleteOne({ _id: request.params.id })
-    .then((result) => {
-      if (result.deletedCount > 0) {
-        updatePersonsArray();
-        response.status(200).end();
-      } else {
-        response.status(404).send("Person not found");
-      }
+  PersonModel.findByIdAndDelete(request.params.id)
+    .then(() => {
+      updatePersonsArray();
+      response.status(200).end();
     })
-    .catch((error) => {
-      console.log("Error deleting the person: ", error);
-      response.status(500).send("Error deleting person.");
-    });
+    .catch((error) => next(error));
+});
+app.put("/api/persons/:id", (request, response, next) => {
+  const person = {
+    name: request.body.name,
+    number: request.body.number,
+  };
+  PersonModel.findByIdAndUpdate(request.params.id, person, { new: true })
+    .then((updatedPerson) => {
+      response.json(updatedPerson);
+      updatePersonsArray();
+    })
+    .catch((error) => next(error));
 });
 
 const port = process.env.PORT;

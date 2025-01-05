@@ -46,7 +46,6 @@ function NameAndNumberDisplay({
   if (personsToShow.length === 0) {
     return;
   }
-
   return (
     <>
       {personsToShow.map((person) => {
@@ -115,12 +114,19 @@ const App = () => {
     event.preventDefault();
     const personObject = {
       name: newName.trim(),
-      number: newPhoneNumber.toString(),
+      number: newPhoneNumber.toString().trim(),
     };
+    if (personObject.name === "" || personObject.number === "") {
+      setMessage("Please give a name and a number");
+      setTimeout(() => {
+        setMessage("");
+      }, 2000);
+      return;
+    }
 
     const sameNameEntry =
       persons.length > 0
-        ? persons.some((person) => person.name === newName)
+        ? persons.some((person) => person.name === newName.trim())
         : false;
 
     if (sameNameEntry) {
@@ -129,10 +135,12 @@ const App = () => {
           `${newName} is  already in the phonebook.Would you like to update the number`
         )
       ) {
-        const sameNamed = persons.filter((person) => person.name === newName);
+        const sameNamed = persons.filter(
+          (person) => person.name === newName.trim()
+        );
         axiosService.update(`${sameNamed[0].id}`, {
           ...sameNamed[0],
-          number: newPhoneNumber,
+          number: newPhoneNumber.trim(),
         });
         setNewName("");
         setNewPhoneNumber("");
@@ -202,7 +210,7 @@ const App = () => {
     if (person.name === newName) {
       axiosService.update(person.id, {
         ...person,
-        number: newPhoneNumber,
+        number: newPhoneNumber.trim(),
       });
 
       update();
