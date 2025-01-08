@@ -139,13 +139,13 @@ const App = () => {
         setNewPhoneNumber("");
       }
     } else {
-      axiosService.create(personObject).then((response) => {
-        setPersons(persons.concat(response));
-        setNewName("");
-      }).catch(error => {
-        setMessage(`${error.message}!!!`)
+      axiosService.create(personObject).catch(error => {
+        setPersons([...persons])
+        console.log(persons)
+        setMessage(`${error.response.data.error}!!!`);
+        return;
       });
-      setPersons([...persons, personObject]);
+        setPersons(persons.concat(personObject));
       setMessage(`Added Successfuly ${personObject.name}`);
       setNewName("");
       setNewPhoneNumber("");
