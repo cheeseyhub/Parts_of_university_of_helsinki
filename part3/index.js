@@ -17,15 +17,6 @@ morgan.token("resContent", (request, response) => JSON.stringify(request.body));
 app.use(morgan(":method :url :status :response-time ms :resContent"));
 app.use(express.static("dist"));
 
-//Error handler
-const errorHandler = (error, request, response, next) => {
-  console.log(error.message);
-  if ((error.name = "CastError")) {
-    return response.status(400).send({ error: "malformatted id " });
-  }
-  next(error);
-};
-app.use(errorHandler);
 
 let persons;
 const updatePersonsArray = async () => {
@@ -68,7 +59,7 @@ app.get("/api/persons", (request, response) => {
   response.json(persons);
 });
 
-app.post("/api/persons", (request, response) => {
+app.post("/api/persons", (request, response, next) => {
   if (!request.body.number) {
     return response.status(404).json({ error: "Missing number" });
   }
@@ -77,10 +68,11 @@ app.post("/api/persons", (request, response) => {
     number: request.body.number,
     id: request.body.id || generateId(),
   });
+  person.save().then((result) => {
+    console.log(result)
+  }).catch((error) => next(error));
   persons = persons.concat(person);
-  person.save();
   updatePersonsArray();
-  response.status(200).send(person);
 });
 app.get("/api/persons/:id", (request, response) => {
   PersonModel.findById(request.params.id)
@@ -103,7 +95,7 @@ app.put("/api/persons/:id", (request, response, next) => {
     name: request.body.name,
     number: request.body.number,
   };
-  PersonModel.findByIdAndUpdate(request.params.id, person, { new: true })
+  PersonModel.findByIdAndUpdate(request.params.id, person, { new: true, runValidators:true,context:"query" })
     .then((updatedPerson) => {
       response.json(updatedPerson);
       updatePersonsArray();
@@ -111,8 +103,19 @@ app.put("/api/persons/:id", (request, response, next) => {
     .catch((error) => next(error));
 });
 
+//Error handler
+const errorHandler = (error, request, response, next) => {
+  console.log(error.message);
+  if ((error.name === "CastError")) {
+    return response.status(400).send({ error: "malformatted id " });
+  }
+  else if (error.name === "ValidationError"){
+    return response.status(400).send({error: error.message})
+  }
+  next(error);
+};
+app.use(errorHandler);
 const port = process.env.PORT;
-
 app.listen(port, () => {
   console.log(`The server is running on the port ${port}`);
 });
