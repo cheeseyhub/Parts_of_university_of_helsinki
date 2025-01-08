@@ -80,7 +80,7 @@ function Notification({ message }) {
   if (message === "") {
     return null;
   }
-  if (message.includes("already been removed")) {
+  if (message.includes("!!!")) {
     return (
       <>
         <h1 className="error">{message}</h1>
@@ -116,13 +116,6 @@ const App = () => {
       name: newName.trim(),
       number: newPhoneNumber.toString().trim(),
     };
-    if (personObject.name === "" || personObject.number === "") {
-      setMessage("Please give a name and a number");
-      setTimeout(() => {
-        setMessage("");
-      }, 2000);
-      return;
-    }
 
     const sameNameEntry =
       persons.length > 0
@@ -149,6 +142,8 @@ const App = () => {
       axiosService.create(personObject).then((response) => {
         setPersons(persons.concat(response));
         setNewName("");
+      }).catch(error => {
+        setMessage(`${error.message}!!!`)
       });
       setPersons([...persons, personObject]);
       setMessage(`Added Successfuly ${personObject.name}`);
