@@ -140,7 +140,7 @@ const App = () => {
       }
     } else {
       axiosService.create(personObject).then((result) => {
-      setPersons(persons.concat(result));
+      setPersons([...persons,result]);
       setMessage(`Added Successfuly ${result.name}`);
       setNewName("");
       setNewPhoneNumber("");
@@ -156,6 +156,7 @@ const App = () => {
       }, 5000);
         return;
       });
+      return;
     }
   }
 
