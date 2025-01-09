@@ -69,7 +69,7 @@ app.post("/api/persons", (request, response, next) => {
     id: request.body.id || generateId(),
   });
   person.save().then((result) => {
-    console.log(result)
+  response.send(result)
   }).catch((error) => next(error));
   persons = persons.concat(person);
   updatePersonsArray();

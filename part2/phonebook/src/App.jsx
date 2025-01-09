@@ -139,19 +139,23 @@ const App = () => {
         setNewPhoneNumber("");
       }
     } else {
-      axiosService.create(personObject).catch(error => {
-        setPersons([...persons])
-        console.log(persons)
-        setMessage(`${error.response.data.error}!!!`);
-        return;
-      });
-        setPersons(persons.concat(personObject));
-      setMessage(`Added Successfuly ${personObject.name}`);
+      axiosService.create(personObject).then((result) => {
+      setPersons(persons.concat(result));
+      setMessage(`Added Successfuly ${result.name}`);
       setNewName("");
       setNewPhoneNumber("");
+
       setTimeout(() => {
         setMessage("");
-      }, 2000);
+      }, 5000);
+      }).catch(error => {
+        setPersons([...persons])
+        setMessage(`${error.response.data.error}!!!`);
+      setTimeout(() => {
+        setMessage("");
+      }, 5000);
+        return;
+      });
     }
   }
 
