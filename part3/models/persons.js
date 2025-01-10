@@ -1,49 +1,47 @@
-const dotenv = require("dotenv");
-const mongoose = require("mongoose");
-dotenv.config();
-const url = process.env.MONGODB_URI;
+const dotenv = require('dotenv')
+const mongoose = require('mongoose')
+dotenv.config()
+const url = process.env.MONGODB_URI
 
-console.log("Connecting.........");
+console.log('Connecting.........')
 
 mongoose
   .connect(url)
-  .then((result) => {
-    console.log("Connected to db");
+  .then(() => {
+    console.log('Connected to db')
   })
-  .catch((error) => {
-    console.log("Error connecting to the database.");
-  });
+  .catch(() => {
+    console.log('Error connecting to the database.')
+  })
 
 const personSchema = new mongoose.Schema({
   name: {
-    type:String,
-    minLength:3,
-    required:true
+    type: String,
+    minLength: 3,
+    required: true,
   },
   number: {
-    type:String,
-    minLength:8,
-    validate:{
-      validator: function(v){
-        return   /^\d{2,3}-\d+$/.test(v)
+    type: String,
+    minLength: 8,
+    validate: {
+      validator: function (v) {
+        return /^\d{2,3}-\d+$/.test(v)
       },
-      message: props => `${props.value} is not a  valid phone number.`
-    }
-    ,
-    required:true
+      message: (props) => `${props.value} is not a  valid phone number.`,
+    },
+    required: true,
   },
-
-});
-personSchema.set("toJSON", {
+})
+personSchema.set('toJSON', {
   transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject._id.toString();
-    delete returnedObject._id;
-    delete returnedObject.__v;
+    returnedObject.id = returnedObject._id.toString()
+    delete returnedObject._id
+    delete returnedObject.__v
   },
-});
-const PersonModel = mongoose.model("Person", personSchema);
+})
+const PersonModel = mongoose.model('Person', personSchema)
 const fetchPersons = async () => {
-  let persons = await PersonModel.find({});
-  return persons;
-};
-module.exports = { fetchPersons, PersonModel };
+  let persons = await PersonModel.find({})
+  return persons
+}
+module.exports = { fetchPersons, PersonModel }
