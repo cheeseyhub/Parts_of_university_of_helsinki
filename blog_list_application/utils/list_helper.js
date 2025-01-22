@@ -67,7 +67,7 @@ function mostLikes(blogs) {
       likes > mostLiked.likes ? { author, likes } : mostLiked,
     { author: null, likes: 0 }
   ); */
-  // ========My Solution ===========
+  // ======== My Solution ===========
 
   //=======Lodash========
   const likeByAuthor = _(blogs)
