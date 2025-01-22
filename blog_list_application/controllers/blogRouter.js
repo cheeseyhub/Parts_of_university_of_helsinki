@@ -4,13 +4,12 @@ blogRouter.get("/", async (request, response) => {
   let blogs = await Blog.find({});
   response.json(blogs);
 });
-blogRouter.post("/", (request, response) => {
+blogRouter.post("/", (request, response, next) => {
   const newBlog = new Blog(request.body);
   newBlog
     .save()
-    .then((result) => {
-      console.log(result);
-      response.status(201).json(result);
+    .then((savedBlog) => {
+      response.status(201).json(savedBlog);
     })
     .catch((error) => next(error));
 });
