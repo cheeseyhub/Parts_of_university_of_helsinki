@@ -30,7 +30,7 @@ blogRouter.get("/:id", async (request, response, next) => {
     next(error);
   }
 });
-blogRouter.get("/:id", async (request, response, next) => {
+blogRouter.delete("/:id", async (request, response, next) => {
   try {
     await Blog.findByIdAndDelete(request.params.id);
     response.status(204).end();

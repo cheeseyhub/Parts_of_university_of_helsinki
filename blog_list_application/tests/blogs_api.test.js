@@ -37,8 +37,8 @@ test("A valid blog can be added", async () => {
     .expect("Content-Type", /application\/json/);
   const blogsAtEnd = await helper.blogsInDB();
   assert.strictEqual(blogsAtEnd.length, initialBlogs.length + 1);
-  const contents = blogsAtEnd.map((blog) => blog.title);
-  assert(contents.includes("The is an async/await blog post."));
+  const titles = blogsAtEnd.map((blog) => blog.title);
+  assert(titles.includes("The is an async/await blog post."));
 });
 test("Blog without content is not added", async () => {
   const newBlog = {
@@ -66,6 +66,16 @@ test("A specific blog can be viewed", async () => {
   assert.deepStrictEqual(resultBlog.body, blogToView);
 });
 
+test("A blog can be deleted", async () => {
+  const blogsAtStart = await helper.blogsInDB();
+  const blogToDelete = blogsAtStart[0];
+
+  await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204);
+  const blogsAtEnd = await helper.blogsInDB();
+  const titles = blogsAtEnd.map((blog) => blog.title);
+  assert(!titles.includes(blogToDelete.title));
+  assert.strictEqual(blogsAtEnd.length, initialBlogs.length - 1);
+});
 after(async () => {
   await mongoose.connection.close();
 });
