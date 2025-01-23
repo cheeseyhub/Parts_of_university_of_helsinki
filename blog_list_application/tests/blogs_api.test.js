@@ -37,7 +37,7 @@ test("A valid blog can be added", async () => {
     .expect("Content-Type", /application\/json/);
   const blogsAtEnd = await helper.blogsInDB();
   assert.strictEqual(blogsAtEnd.length, initialBlogs.length + 1);
-  const contents = blogsAtEnd;
+  const contents = blogsAtEnd.map((blog) => blog.title);
   assert(contents.includes("The is an async/await blog post."));
 });
 test("Blog without content is not added", async () => {
@@ -52,9 +52,18 @@ test("Blog without content is not added", async () => {
 
 test("The first blog is about HTTP methods ", async () => {
   const response = await api.get("/api/blogs");
-
   const contents = response.body.map((e) => e.title);
   assert.strictEqual(contents.includes("HTML is easy."), true);
+});
+
+test("A specific blog can be viewed", async () => {
+  const blogAtStart = await helper.blogsInDB();
+  const blogToView = blogAtStart[0];
+  const resultBlog = await api
+    .get(`/api/blogs/${blogToView.id}`)
+    .expect(200)
+    .expect("Content-Type", /application\/json/);
+  assert.deepStrictEqual(resultBlog.body, blogToView);
 });
 
 after(async () => {

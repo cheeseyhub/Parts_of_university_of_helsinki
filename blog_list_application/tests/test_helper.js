@@ -18,7 +18,7 @@ const nonExistingId = async () => {
 };
 const blogsInDB = async () => {
   let blogs = await Blog.find({});
-  return blogs.map((blog) => blog.title);
+  return blogs.map((blog) => blog.toJSON());
 };
 
 module.exports = {
