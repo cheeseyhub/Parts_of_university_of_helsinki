@@ -4,10 +4,7 @@ const supertest = require("supertest");
 const app = require("../app");
 const api = supertest(app);
 const mongoose = require("mongoose");
-const User = require("../models/user");
-beforeEach(() => {
-  console.log("working");
-});
+
 describe("Correct Users are added.", () => {
   test("username or password less than 3 characters is not accepted", async () => {
     let newUser = {
