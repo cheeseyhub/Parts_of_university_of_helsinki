@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-
 let userSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -14,6 +13,7 @@ let userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  blogs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Blog" }],
 });
 userSchema.set("toJSON", {
   transform: (document, returnedObject) => {
