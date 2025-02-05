@@ -1,4 +1,4 @@
-const { test, after, beforeEach } = require("node:test");
+const { test, after, before, beforeEach } = require("node:test");
 const assert = require("node:assert");
 const mongoose = require("mongoose");
 const supertest = require("supertest");
@@ -7,7 +7,24 @@ const Blog = require("../models/blog");
 const api = supertest(app);
 const helper = require("./test_helper");
 const initialBlogs = helper.initialBlogs;
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+const User = require("../models/user");
 
+let tokenOfTestUser = "";
+before(async () => {
+  await User.findOneAndDelete({ username: "testUser" });
+  const testPassword = await bcrypt.hash("testPassword", 10);
+  const testUser = new User({
+    username: "testUser",
+    password: testPassword,
+  });
+  await testUser.save();
+  const result = await api
+    .post("/api/login")
+    .send({ username: "testUser", password: "testPassword" });
+  tokenOfTestUser = result.body.token;
+});
 beforeEach(async () => {
   await Blog.deleteMany({});
   let blogObject = new Blog(initialBlogs[0]);
@@ -29,9 +46,9 @@ test("A valid blog can be added", async () => {
   const newBlog = {
     title: "The is an async/await blog post.",
   };
-
   await api
     .post("/api/blogs")
+    .set({ authorization: `Bearer ${tokenOfTestUser}` })
     .send(newBlog)
     .expect(201)
     .expect("Content-Type", /application\/json/);
@@ -40,12 +57,17 @@ test("A valid blog can be added", async () => {
   const titles = blogsAtEnd.map((blog) => blog.title);
   assert(titles.includes("The is an async/await blog post."));
 });
+
 test("Blog without content is not added", async () => {
   const newBlog = {
     likes: 5,
   };
 
-  await api.post("/api/blogs").send(newBlog).expect(400);
+  await api
+    .post("/api/blogs")
+    .set({ authorization: `Bearer ${tokenOfTestUser}` })
+    .send(newBlog)
+    .expect(400);
   const blogsAtEnd = await helper.blogsInDB();
   assert.strictEqual(blogsAtEnd.length, initialBlogs.length);
 });
@@ -70,7 +92,10 @@ test("A blog can be deleted", async () => {
   const blogsAtStart = await helper.blogsInDB();
   const blogToDelete = blogsAtStart[0];
 
-  await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204);
+  await api
+    .delete(`/api/blogs/${blogToDelete.id}`)
+    .set({ authorization: `Bearer ${tokenOfTestUser}` })
+    .expect(204);
   const blogsAtEnd = await helper.blogsInDB();
   const titles = blogsAtEnd.map((blog) => blog.title);
   assert(!titles.includes(blogToDelete.title));

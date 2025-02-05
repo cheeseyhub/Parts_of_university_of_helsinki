@@ -9,24 +9,28 @@ blogRouter.get("/", async (request, response) => {
   let blogs = await Blog.find({}).populate("user", { username: 1 });
   return response.json(blogs);
 });
-blogRouter.post("/", async (request, response, next) => {
-  //Checks if the user is logged by decoding the token and checking it against the secret
-  const user = request.user;
-  if (!user.id) {
-    return response.status(401).json({ error: "token invalid." });
+blogRouter.post(
+  "/",
+  middlewares.userExtractor,
+  async (request, response, next) => {
+    //Checks if the user is logged by decoding the token and checking it against the secret
+    const user = request.user;
+    if (!user) {
+      return response.status(401).json({ error: "Unauthorized" });
+    }
+    const newBlog = new Blog({
+      title: request.body.title,
+      author: request.body.author,
+      url: request.body.url,
+      likes: request.body.likes,
+      user: user.id,
+    });
+    const savedBlog = await newBlog.save();
+    user.blogs = user.blogs.concat(savedBlog._id);
+    await user.save();
+    return response.status(201).json(savedBlog);
   }
-  const newBlog = new Blog({
-    title: request.body.title,
-    author: request.body.author,
-    url: request.body.url,
-    likes: request.body.likes,
-    user: user.id,
-  });
-  const savedBlog = await newBlog.save();
-  user.blogs = user.blogs.concat(savedBlog._id);
-  await user.save();
-  return response.status(201).json(savedBlog);
-});
+);
 blogRouter.get("/:id", async (request, response, next) => {
   const blog = await Blog.findById(request.params.id);
   if (blog) {
