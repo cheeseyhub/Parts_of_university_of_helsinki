@@ -26,10 +26,17 @@ before(async () => {
   tokenOfTestUser = result.body.token;
 });
 beforeEach(async () => {
+  const testUser = await User.findOne({ username: "testUser" });
   await Blog.deleteMany({});
-  let blogObject = new Blog(initialBlogs[0]);
+  let blogObject = new Blog({
+    title: initialBlogs[0].title,
+    user: testUser._id.toString(),
+  });
   await blogObject.save();
-  blogObject = new Blog(initialBlogs[1]);
+  blogObject = new Blog({
+    title: initialBlogs[1].title,
+    user: testUser._id.toString(),
+  });
   await blogObject.save();
 });
 test.only("blogs are returned as json", async () => {
@@ -81,6 +88,7 @@ test("The first blog is about HTTP methods ", async () => {
 test("A specific blog can be viewed", async () => {
   const blogAtStart = await helper.blogsInDB();
   const blogToView = blogAtStart[0];
+  blogToView.user = blogToView.user.toString();
   const resultBlog = await api
     .get(`/api/blogs/${blogToView.id}`)
     .expect(200)
