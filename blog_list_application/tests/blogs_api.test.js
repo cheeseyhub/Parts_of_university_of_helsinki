@@ -65,7 +65,7 @@ test("A valid blog can be added", async () => {
   assert(titles.includes("The is an async/await blog post."));
 });
 
-test("Blog without content is not added", async () => {
+test("Blog without required fields is not added", async () => {
   const newBlog = {
     likes: 5,
   };
@@ -77,6 +77,12 @@ test("Blog without content is not added", async () => {
     .expect(400);
   const blogsAtEnd = await helper.blogsInDB();
   assert.strictEqual(blogsAtEnd.length, initialBlogs.length);
+});
+test("Blog without authorization is not added", async () => {
+  const newBlog = {
+    title: "newBlog",
+  };
+  await api.post("/api/blogs").send(newBlog).expect(401);
 });
 
 test("The first blog is about HTTP methods ", async () => {
