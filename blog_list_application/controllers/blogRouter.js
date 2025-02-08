@@ -8,9 +8,7 @@ const middlewares = require("../utils/middlewares");
 blogRouter.get("/", async (request, response) => {
   let blogs = await Blog.find({}).populate("user", { username: 1 });
 
-  return response.json(
-    blogs.forEach((blog) => (blog.author = blog.user.username))
-  );
+  return response.json(blogs);
 });
 blogRouter.post(
   "/",
@@ -21,7 +19,6 @@ blogRouter.post(
     if (!user) {
       return response.status(401).json({ error: "Unauthorized" });
     }
-    console.log(user);
     const newBlog = new Blog({
       title: request.body.title,
       author: request.body.author,
