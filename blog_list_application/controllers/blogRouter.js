@@ -16,6 +16,7 @@ blogRouter.post(
   async (request, response, next) => {
     //Checks if the user is logged by decoding the token and checking it against the secret
     const user = request.user;
+    console.log(user);
     if (!user) {
       return response.status(401).json({ error: "Unauthorized" });
     }
