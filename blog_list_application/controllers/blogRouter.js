@@ -41,6 +41,17 @@ blogRouter.get("/:id", async (request, response, next) => {
     return response.status(404).end();
   }
 });
+blogRouter.put("/:id", async (request, response) => {
+  let updateOfBlog = { ...request.body };
+  let blog = await Blog.findByIdAndUpdate(request.params.id, updateOfBlog, {
+    new: true,
+    runValidators: true,
+  });
+  if (!blog) {
+    return response.status(404).json({ error: "Blog not found." });
+  }
+  response.status(200).json({ blog });
+});
 blogRouter.delete(
   "/:id",
   middlewares.userExtractor,
