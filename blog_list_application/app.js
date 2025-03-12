@@ -27,6 +27,10 @@ app.get("/", (request, response) => {
 app.use("/api/users", usersRouter);
 app.use("/api/blogs", blogRouter);
 app.use("/api/login", LoginRouter);
+if (process.env.NODE_ENV === "test") {
+  const testingRouter = require("./controllers/testing");
+  app.use("/api/testing", testingRouter);
+}
 app.use(middlewares.unknownEndPoint);
 app.use(middlewares.errorHandler);
 module.exports = app;
