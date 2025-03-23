@@ -230,7 +230,7 @@ test.describe("Authorized user can delete the blog, and  blogs are sorted by lik
     await expect(secondBlog).toBeVisible();
     await expect(thirdBlog).toBeVisible();
     await expect(fourthBlog).toBeVisible();
-
+    //clicking show buttons and liking
     await page.locator("button", { hasText: "Show" }).evaluateAll((btns) => {
       btns.forEach((button) => button.click());
     });
@@ -242,9 +242,11 @@ test.describe("Authorized user can delete the blog, and  blogs are sorted by lik
         await likeBtn.click();
       }
     }
+    //clicking show buttons and liking
     await page.reload();
     await page.waitForTimeout(900);
 
+    //clicking show buttons again after liking and then getting the like numbers
     await page.locator("button", { hasText: "Show" }).evaluateAll((btns) => {
       btns.forEach((button) => button.click());
     });
